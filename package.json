@@ -1,0 +1,27 @@
+{
+  "name": "communaute-le-revenu",
+  "private": true,
+  "version": "0.1.0",
+  "engines": {
+    "node": ">=22.0.0"
+  },
+  "workspaces": [
+    "apps/web",
+    "apps/cms"
+  ],
+  "scripts": {
+    "dev": "concurrently -n web,cms -c blue,magenta \"npm run dev --workspace=apps/web\" \"npm run dev --workspace=apps/cms\"",
+    "dev:web": "npm run dev --workspace=apps/web",
+    "dev:cms": "npm run dev --workspace=apps/cms",
+    "build": "npm run build --workspaces --if-present",
+    "lint": "npm run lint --workspaces --if-present",
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "test": "npm run test --workspaces --if-present",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
+  },
+  "devDependencies": {
+    "concurrently": "^10.0.6",
+    "prettier": "^3.9.10"
+  }
+}
