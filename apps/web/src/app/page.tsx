@@ -4,12 +4,11 @@ import { listCategories } from '@/lib/strapi/categories';
 import { DiscussionFeed } from './DiscussionFeed';
 import { FeedSkeleton } from './FeedSkeleton';
 
-interface HomeFeedProps {
-  categorySlug?: string;
-  sort: DiscussionSort;
-}
+async function HomeFeed({ searchParams }: Pick<PageProps<'/'>, 'searchParams'>) {
+  const params = await searchParams;
+  const categorySlug = typeof params.category === 'string' ? params.category : undefined;
+  const sort: DiscussionSort = params.sort === 'createdAt:asc' ? 'createdAt:asc' : 'createdAt:desc';
 
-async function HomeFeed({ categorySlug, sort }: HomeFeedProps) {
   const [categories, discussions] = await Promise.all([
     listCategories(),
     listDiscussions({ categorySlug, sort }),
@@ -20,15 +19,14 @@ async function HomeFeed({ categorySlug, sort }: HomeFeedProps) {
   );
 }
 
-export default async function HomePage({ searchParams }: PageProps<'/'>) {
-  const params = await searchParams;
-  const categorySlug = typeof params.category === 'string' ? params.category : undefined;
-  const sort: DiscussionSort = params.sort === 'createdAt:asc' ? 'createdAt:asc' : 'createdAt:desc';
-
+// Not async — awaiting searchParams here (a runtime API) instead of inside
+// the Suspense-wrapped child would block the whole route from prerendering
+// (confirmed in Phase 7 reading the dev server's own console).
+export default function HomePage({ searchParams }: PageProps<'/'>) {
   return (
     <main className="mx-auto w-full max-w-3xl flex-1 px-4 py-6">
       <Suspense fallback={<FeedSkeleton />}>
-        <HomeFeed categorySlug={categorySlug} sort={sort} />
+        <HomeFeed searchParams={searchParams} />
       </Suspense>
     </main>
   );

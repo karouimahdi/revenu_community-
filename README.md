@@ -5,8 +5,8 @@ categories. Next.js (App Router) frontend, Strapi v5 + PostgreSQL backend.
 Take-home technical test.
 
 Status: the Strapi side is done (content types, permissions, seed data,
-tests). On the Next.js side, the data layer and the home feed are done;
-discussion detail, create-discussion, and login land next.
+tests). On the Next.js side, the data layer, home feed, and discussion
+detail (with replies) are done; create-discussion and login land next.
 
 ## Setup
 
@@ -136,6 +136,17 @@ password below:
 - Design tokens live in `globals.css`'s `@theme inline` block, not a
   `tailwind.config.ts` — Tailwind v4 is CSS-first config, and
   `create-next-app` never generated a JS config file for this project.
+- The discussion detail page's existence-check (`getDiscussion` +
+  `notFound()`) deliberately stays outside any `<Suspense>` boundary,
+  unlike the home feed — once a Suspense fallback's `200` shell has
+  streamed, a later `notFound()` can't change the status code anymore,
+  only the body. A real `404` for an unknown discussion matters more than
+  this one route's static-shell optimization.
+- Discussion/reply bodies render through a small hand-rolled markdown-lite
+  (`**bold**` + `- ` lists only, ported from the mockup) via
+  `dangerouslySetInnerHTML` — safe here because the renderer escapes the
+  input first and only ever reintroduces a fixed, attribute-less set of
+  tags around already-escaped text, never raw user HTML.
 - Zod validates every Strapi response at the `lib/strapi` boundary — a
   backend contract break becomes a loud parse error there instead of an
   `undefined.map is not a function` several components deep. `qs` builds
@@ -156,13 +167,12 @@ password below:
 The Strapi side is done: content types, relations, permissions
 (unauthenticated users can't publish, nobody can publish as someone else),
 idempotent seed data, and an automated test suite. On Next.js: the data
-layer (typed Strapi client, Zod-validated responses, Route Handlers,
-TanStack Query hooks, Zustand session/toast stores) and the home feed
-(category filter, date sort, loading/error/empty states) are both done.
-The throwaway debug page (`apps/web/src/app/debug/`) is still there,
-pending deletion once discussion detail and create-discussion exist to
-replace what it's proving. Remaining core work: discussion detail with
-replies, create-discussion form with server-side validation, login with
+layer, the home feed (category filter, date sort, loading/error/empty
+states), and discussion detail (post content, replies, optimistic reply
+posting with rollback, toasts) are all done. The throwaway debug page
+(`apps/web/src/app/debug/`) is still there, pending deletion once
+create-discussion and login exist to replace what it's proving. Remaining
+core work: create-discussion form with server-side validation, login with
 the seeded demo users.
 
 After that, in priority order if time allows: pagination, search, "Utile"

@@ -4,6 +4,7 @@ import { Suspense } from 'react';
 import { Providers } from './Providers';
 import { SessionBoundary } from './SessionBoundary';
 import { Header } from './Header';
+import { Toaster } from '@/components/Toaster';
 import './globals.css';
 
 const geistSans = Geist({
@@ -40,6 +41,7 @@ export default function RootLayout({ children }: LayoutProps<'/'>) {
           </Suspense>
           <Header />
           {children}
+          <Toaster />
         </Providers>
       </body>
     </html>
