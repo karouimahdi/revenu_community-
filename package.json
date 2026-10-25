@@ -13,6 +13,7 @@
     "dev": "concurrently -n web,cms -c blue,magenta \"npm run dev --workspace=apps/web\" \"npm run dev --workspace=apps/cms\"",
     "dev:web": "npm run dev --workspace=apps/web",
     "dev:cms": "npm run dev --workspace=apps/cms",
+    "seed": "npm run seed --workspace=apps/cms",
     "build": "npm run build --workspaces --if-present",
     "lint": "npm run lint --workspaces --if-present",
     "typecheck": "npm run typecheck --workspaces --if-present",

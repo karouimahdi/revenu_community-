@@ -24,4 +24,24 @@ export default tseslint.config(
       '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
     },
   },
+  {
+    // Umzug loads migrations, and `npm run seed` runs scripts/seed.js directly
+    // with `node` — both are plain CommonJS outside the tsc build, so they
+    // need their own Node globals.
+    files: ['database/migrations/**/*.js', 'scripts/**/*.js'],
+    languageOptions: {
+      sourceType: 'commonjs',
+      globals: {
+        module: 'writable',
+        require: 'readonly',
+        exports: 'writable',
+        __dirname: 'readonly',
+        console: 'readonly',
+        process: 'readonly',
+      },
+    },
+    rules: {
+      '@typescript-eslint/no-require-imports': 'off',
+    },
+  },
 );

@@ -4,8 +4,8 @@ Forum-style community space for Le Revenu readers: discussions, replies,
 categories. Next.js (App Router) frontend, Strapi v5 + PostgreSQL backend.
 Take-home technical test.
 
-Status: Phase 0 (scaffolding) complete. Content types, auth, and the
-actual pages land in the phases below.
+Status: content types, permissions, and seed data are in place on the
+Strapi side. Frontend pages land in the phases below.
 
 ## Setup
 
@@ -72,8 +72,22 @@ Testing Library for the frontend.
 
 ## Demo accounts
 
-Not available yet — lands with the seeding phase, alongside sample
-categories and discussions. Credentials will be listed here once seeded.
+```bash
+npm run seed
+```
+
+Idempotent — safe to run again on the same database, won't duplicate
+categories, users, discussions, or replies. Seeds 7 categories and 14
+sample discussions (with replies) across 5 demo users, all sharing the
+password below:
+
+| username | password |
+|---|---|
+| vincent_etf | Demo1234! |
+| papyboursier | Demo1234! |
+| odile_retraite | Demo1234! |
+| sophie_invest | Demo1234! |
+| karim_immo | Demo1234! |
 
 ## Architecture decisions
 
@@ -105,12 +119,12 @@ categories and discussions. Credentials will be listed here once seeded.
 
 ## What I would do next
 
-Remaining core work: Strapi content types and relations, permissions
-locked down server-side (unauthenticated users can't publish, nobody can
-publish as someone else), idempotent seeding, then the four pages — home
-feed with category filter and date sort, discussion detail with replies,
-create-discussion form with server-side validation, login with seeded
-demo users.
+Strapi content types, relations, permissions (unauthenticated users can't
+publish, nobody can publish as someone else), and idempotent seed data are
+done. Remaining core work is the Strapi test suite, then the four Next.js
+pages — home feed with category filter and date sort, discussion detail
+with replies, create-discussion form with server-side validation, login
+with the seeded demo users.
 
 After that, in priority order if time allows: pagination, search, "Utile"
 votes and best-answer marking, a user profile page, Playwright E2E
