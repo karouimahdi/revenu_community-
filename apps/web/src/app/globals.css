@@ -5,11 +5,41 @@
   --foreground: #171717;
 }
 
+/* Design tokens ported from maquette-communaute-le-revenu.html's :root
+   (light theme only — dark mode is out of scope, PLAN.md §4.8). */
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+  --font-display: var(--font-playfair-display), 'Times New Roman', Georgia, serif;
+
+  --color-brand: #eb0f0f;
+  --color-brand-hover: #d00d0d;
+  --color-ink: #1d1d1f;
+  --color-ink-2: #424245;
+  --color-ink-3: #6e6e73;
+  --color-surface: #ffffff;
+  --color-surface-2: #f2f2f4;
+  --color-line: #e5e5ea;
+  --color-hairline: rgba(0, 0, 0, 0.07);
+  --color-ok: #1a8a4a;
+  --color-ok-soft: #e4f6ea;
+  --color-alert: #e00b0b;
+  --color-alert-soft: #ffeceb;
+
+  --color-avatar-1: #5856d6;
+  --color-avatar-2: #0a7f99;
+  --color-avatar-3: #6e6e73;
+  --color-avatar-4: #c93400;
+  --color-avatar-5: #d30f45;
+}
+
+@utility shadow-card {
+  box-shadow:
+    0 0 0 0.5px rgba(0, 0, 0, 0.03),
+    0 1px 2px rgba(0, 0, 0, 0.05),
+    0 6px 16px -6px rgba(0, 0, 0, 0.08);
 }
 
 @media (prefers-color-scheme: dark) {

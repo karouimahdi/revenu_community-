@@ -5,8 +5,8 @@ categories. Next.js (App Router) frontend, Strapi v5 + PostgreSQL backend.
 Take-home technical test.
 
 Status: the Strapi side is done (content types, permissions, seed data,
-tests). The Next.js data layer (typed Strapi client, TanStack Query hooks,
-Zustand session store) is also done; the actual pages land next.
+tests). On the Next.js side, the data layer and the home feed are done;
+discussion detail, create-discussion, and login land next.
 
 ## Setup
 
@@ -124,10 +124,18 @@ password below:
   representation (session echo for nested components, a toast queue).
   Everything else is either in the URL or in TanStack Query's cache.
 - Reading the session cookie happens in exactly one place
-  (`app/session-boundary.tsx`), wrapped in its own `<Suspense>` instead of
+  (`app/SessionBoundary.tsx`), wrapped in its own `<Suspense>` instead of
   in the root layout directly — Next 16's Cache Components treats a
   runtime cookie read as blocking prerendering for whatever subtree
   touches it, and the layout wraps every route.
+- The home feed's filter/sort state syncs to the URL via
+  `window.history.replaceState` directly, not `next/navigation`'s router —
+  `router.replace` triggers a soft RSC re-render, which would hit the
+  server on every filter change and defeat the point of routing filtering
+  through TanStack Query + the Route Handler instead.
+- Design tokens live in `globals.css`'s `@theme inline` block, not a
+  `tailwind.config.ts` — Tailwind v4 is CSS-first config, and
+  `create-next-app` never generated a JS config file for this project.
 - Zod validates every Strapi response at the `lib/strapi` boundary — a
   backend contract break becomes a loud parse error there instead of an
   `undefined.map is not a function` several components deep. `qs` builds
@@ -147,14 +155,15 @@ password below:
 
 The Strapi side is done: content types, relations, permissions
 (unauthenticated users can't publish, nobody can publish as someone else),
-idempotent seed data, and an automated test suite. The Next.js data layer
-is also done: typed Strapi client, Zod-validated responses, Route
-Handlers, TanStack Query hooks, and the Zustand session/toast stores —
-proved against seeded data on a throwaway debug page
-(`apps/web/src/app/debug/`, to delete once the real pages exist).
-Remaining core work is the four actual pages — home feed with category
-filter and date sort, discussion detail with replies, create-discussion
-form with server-side validation, login with the seeded demo users.
+idempotent seed data, and an automated test suite. On Next.js: the data
+layer (typed Strapi client, Zod-validated responses, Route Handlers,
+TanStack Query hooks, Zustand session/toast stores) and the home feed
+(category filter, date sort, loading/error/empty states) are both done.
+The throwaway debug page (`apps/web/src/app/debug/`) is still there,
+pending deletion once discussion detail and create-discussion exist to
+replace what it's proving. Remaining core work: discussion detail with
+replies, create-discussion form with server-side validation, login with
+the seeded demo users.
 
 After that, in priority order if time allows: pagination, search, "Utile"
 votes and best-answer marking, a user profile page, Playwright E2E

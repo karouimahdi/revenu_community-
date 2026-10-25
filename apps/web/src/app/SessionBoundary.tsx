@@ -1,7 +1,7 @@
 import { cookies } from 'next/headers';
 import { getMe } from '@/lib/strapi/auth';
 import { SESSION_COOKIE_NAME } from '@/lib/session';
-import { SessionSync } from './session-sync';
+import { SessionSync } from './SessionSync';
 
 // The only Server Component that reads the session cookie — isolated here,
 // behind its own <Suspense> boundary in layout.tsx, so a runtime API read
