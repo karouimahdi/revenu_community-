@@ -25,10 +25,11 @@ export default tseslint.config(
     },
   },
   {
-    // Umzug loads migrations, and `npm run seed` runs scripts/seed.js directly
-    // with `node` — both are plain CommonJS outside the tsc build, so they
-    // need their own Node globals.
-    files: ['database/migrations/**/*.js', 'scripts/**/*.js'],
+    // Umzug loads migrations, `npm run seed` runs scripts/seed.js directly
+    // with `node`, and jest.config.js / tests/jest.setup.js run outside
+    // ts-jest's transform entirely — all plain CommonJS outside the tsc
+    // build, so they need their own Node globals.
+    files: ['database/migrations/**/*.js', 'scripts/**/*.js', 'jest.config.js', 'tests/jest.setup.js'],
     languageOptions: {
       sourceType: 'commonjs',
       globals: {

@@ -66,9 +66,17 @@ Other commands: `npm run lint`, `npm run typecheck`, `npm run build`,
 
 ## Test
 
-Not wired yet. Lands with the test phases: Jest + Supertest against a
-running Strapi instance on a disposable SQLite DB for the API, Vitest +
-Testing Library for the frontend.
+```bash
+npm test --workspace=apps/cms
+```
+
+Jest + Supertest against a disposable SQLite database (wiped before every
+run), covering input validation, author-spoofing defense, and the home
+feed's pagination/sort/filter query params. Production stays Postgres-only
+— SQLite is a test-speed trade-off, not a second supported deployment
+target.
+
+Next.js side (Vitest + Testing Library) lands with its own test phase.
 
 ## Demo accounts
 
@@ -116,15 +124,20 @@ password below:
 - Local dev Postgres runs in a disposable Docker container rather than
   reusing the machine's existing cluster — keeps this project's data
   isolated from anything else on the box.
+- Strapi's test suite runs against SQLite (`better-sqlite3`), not the dev
+  Postgres container — same query layer either way, zero external service
+  needed to run `npm test`. Jest + `ts-jest` + Supertest: the natural fit
+  for a TypeScript Strapi app and the stack Strapi's own community docs
+  point to for API testing.
 
 ## What I would do next
 
-Strapi content types, relations, permissions (unauthenticated users can't
-publish, nobody can publish as someone else), and idempotent seed data are
-done. Remaining core work is the Strapi test suite, then the four Next.js
-pages — home feed with category filter and date sort, discussion detail
-with replies, create-discussion form with server-side validation, login
-with the seeded demo users.
+The Strapi side is done: content types, relations, permissions
+(unauthenticated users can't publish, nobody can publish as someone else),
+idempotent seed data, and an automated test suite. Remaining core work is
+the four Next.js pages — home feed with category filter and date sort,
+discussion detail with replies, create-discussion form with server-side
+validation, login with the seeded demo users.
 
 After that, in priority order if time allows: pagination, search, "Utile"
 votes and best-answer marking, a user profile page, Playwright E2E
