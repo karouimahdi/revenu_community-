@@ -22,7 +22,9 @@ export function DiscussionRow({ discussion }: { discussion: DiscussionListItem }
       >
         {count} réponse{count > 1 ? 's' : ''}
       </span>
-      <span className="justify-self-end text-[12.5px] text-ink-3">{formatRelativeDate(discussion.createdAt)}</span>
+      <span suppressHydrationWarning className="justify-self-end text-[12.5px] text-ink-3">
+        {formatRelativeDate(discussion.createdAt)}
+      </span>
     </Link>
   );
 }

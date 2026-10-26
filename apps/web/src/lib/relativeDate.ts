@@ -1,4 +1,5 @@
-// Ported from the mockup's ago(min) util (maquette-communaute-le-revenu.html).
+// Ported from the mockup's ago(min) util. Callers need suppressHydrationWarning
+// — SSR and hydration call this at different real moments, can cross a minute.
 export function formatRelativeDate(iso: string): string {
   const minutes = (Date.now() - new Date(iso).getTime()) / 60_000;
 

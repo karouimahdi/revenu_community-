@@ -40,7 +40,7 @@ export function DiscussionCard({ discussion }: { discussion: DiscussionListItem 
         <div className="mt-2 flex items-center gap-2 text-[13px] text-ink-3">
           <Avatar username={username ?? '?'} size="xs" />
           <b className="font-semibold text-ink-2">{username ?? 'Utilisateur supprimé'}</b>
-          <span>· {formatRelativeDate(discussion.createdAt)}</span>
+          <span suppressHydrationWarning>· {formatRelativeDate(discussion.createdAt)}</span>
         </div>
       </div>
     </Link>
