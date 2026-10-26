@@ -5,6 +5,7 @@ export type DiscussionSort = 'createdAt:asc' | 'createdAt:desc';
 
 export interface ListDiscussionsFilters {
   categorySlug?: string;
+  authorUsername?: string;
   search?: string;
   sort?: DiscussionSort;
   unanswered?: boolean;
@@ -18,7 +19,7 @@ const LIST_POPULATE = {
 };
 
 export async function listDiscussions(filters: ListDiscussionsFilters = {}) {
-  const { categorySlug, search, sort = 'createdAt:desc', unanswered, page = 1, pageSize = 20 } = filters;
+  const { categorySlug, authorUsername, search, sort = 'createdAt:desc', unanswered, page = 1, pageSize = 20 } = filters;
 
   const query: Record<string, unknown> = {
     sort: [sort],
@@ -28,7 +29,14 @@ export async function listDiscussions(filters: ListDiscussionsFilters = {}) {
   };
   const queryFilters: Record<string, unknown> = {};
   if (categorySlug) queryFilters.category = { slug: { $eq: categorySlug } };
-  if (search) queryFilters.title = { $containsi: search };
+  if (authorUsername) queryFilters.authorUsername = { $eq: authorUsername };
+  if (search) {
+    queryFilters.$or = [
+      { title: { $containsi: search } },
+      { content: { $containsi: search } },
+      { authorUsername: { $containsi: search } },
+    ];
+  }
   if (unanswered) queryFilters.repliesCount = { $eq: 0 };
   if (Object.keys(queryFilters).length > 0) query.filters = queryFilters;
 

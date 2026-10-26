@@ -18,11 +18,15 @@ interface ReplyThreadProps {
 export function ReplyThread({ documentId, initialReplies, initialDiscussion }: ReplyThreadProps) {
   // Seeds the discussion(documentId) cache entry so useCreateReply's
   // optimistic update can read the discussion's type without a background
-  useDiscussion(documentId, initialDiscussion);
+  const { data: discussionData } = useDiscussion(documentId, initialDiscussion);
 
   const { data, isPending, isError, error } = useReplies(documentId, initialReplies);
-  const { isAuthenticated } = useSession();
+  const { user, isAuthenticated } = useSession();
   const count = data?.data.length ?? 0;
+
+  const discussion = discussionData?.data;
+  const canMarkBestAnswer =
+    isAuthenticated && discussion?.type === 'question' && user?.username === discussion?.authorUsername;
 
   return (
     <section aria-label="Réponses" className="mt-6">
@@ -41,7 +45,12 @@ export function ReplyThread({ documentId, initialReplies, initialDiscussion }: R
       ) : (
         <div className="mb-6 space-y-4">
           {data.data.map((reply) => (
-            <ReplyCard key={reply.documentId} reply={reply} />
+            <ReplyCard
+              key={reply.documentId}
+              reply={reply}
+              discussionDocumentId={documentId}
+              canMarkBestAnswer={canMarkBestAnswer}
+            />
           ))}
         </div>
       )}

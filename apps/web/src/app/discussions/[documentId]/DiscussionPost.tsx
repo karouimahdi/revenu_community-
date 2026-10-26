@@ -1,8 +1,10 @@
+import Link from 'next/link';
 import { Avatar } from '@/components/Avatar';
 import { CategoryTag } from '@/components/CategoryTag';
 import { Prose } from '@/components/Prose';
 import { formatRelativeDate } from '@/lib/relativeDate';
 import type { DiscussionDetail } from '@/lib/strapi/schemas';
+import { VoteButton } from './VoteButton';
 
 export function DiscussionPost({ discussion }: { discussion: DiscussionDetail }) {
   const username = discussion.authorUsername;
@@ -23,13 +25,29 @@ export function DiscussionPost({ discussion }: { discussion: DiscussionDetail })
       <div className="mt-4 flex items-center gap-3">
         <Avatar username={username ?? '?'} size="md" />
         <div>
-          <div className="font-semibold text-ink">{username ?? 'Utilisateur supprimé'}</div>
-          <div className="text-[13px] text-ink-3">{formatRelativeDate(discussion.createdAt)}</div>
+          {username ? (
+            <Link href={`/profile/${username}`} className="font-semibold text-ink hover:text-brand">
+              {username}
+            </Link>
+          ) : (
+            <div className="font-semibold text-ink">Utilisateur supprimé</div>
+          )}
+          <div suppressHydrationWarning className="text-[13px] text-ink-3">
+            {formatRelativeDate(discussion.createdAt)}
+          </div>
         </div>
       </div>
 
       <div className="mt-5">
         <Prose content={discussion.content} />
+      </div>
+
+      <div className="mt-4">
+        <VoteButton
+          discussionDocumentId={discussion.documentId}
+          authorUsername={username}
+          count={discussion.usefulCount}
+        />
       </div>
     </article>
   );

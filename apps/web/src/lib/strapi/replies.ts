@@ -20,3 +20,11 @@ export async function createReply(discussionDocumentId: string, content: string,
   });
   return strapiSingleResponseSchema(replySchema).parse(json);
 }
+
+export async function markBestAnswer(replyDocumentId: string, token: string) {
+  const json = await strapiFetch(`/api/replies/${replyDocumentId}/best-answer`, {
+    method: 'POST',
+    token,
+  });
+  return strapiSingleResponseSchema(replySchema).parse(json);
+}
