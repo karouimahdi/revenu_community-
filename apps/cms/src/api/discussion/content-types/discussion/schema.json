@@ -54,6 +54,11 @@
       "type": "integer",
       "default": 0,
       "min": 0
+    },
+    "usefulCount": {
+      "type": "integer",
+      "default": 0,
+      "min": 0
     }
   }
 }

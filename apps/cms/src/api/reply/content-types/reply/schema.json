@@ -31,6 +31,15 @@
       "target": "api::discussion.discussion",
       "inversedBy": "replies",
       "required": true
+    },
+    "usefulCount": {
+      "type": "integer",
+      "default": 0,
+      "min": 0
+    },
+    "isBestAnswer": {
+      "type": "boolean",
+      "default": false
     }
   }
 }

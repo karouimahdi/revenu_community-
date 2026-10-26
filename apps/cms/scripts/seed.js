@@ -48,7 +48,7 @@ const CATEGORIES = [
   },
 ];
 
-const DISCUSSIONS = [
+const EDITORIAL_DISCUSSIONS = [
   {
     category: 'cafe',
     type: 'discussion',
@@ -295,6 +295,76 @@ const DISCUSSIONS = [
     replies: [],
   },
 ];
+
+// Pagination/infinite-scroll needs more than one page (pageSize 20) to test
+// against — generated instead of hand-written to avoid 40+ duplicated blocks.
+const FILLER_TEMPLATES = [
+  {
+    type: 'question',
+    title: (c) => `Débuter en ${c.name} : par où commencer ?`,
+    content: () => "Je pars de zéro sur ce sujet. Quels conseils donneriez-vous à quelqu'un qui débute ?",
+  },
+  {
+    type: 'discussion',
+    title: (c) => `${c.name} : votre bilan de l'année`,
+    content: () => 'Avec le recul, quel bilan tirez-vous de vos décisions récentes sur ce sujet ?',
+  },
+  {
+    type: 'question',
+    title: (c) => `Erreur à éviter en ${c.name} ?`,
+    content: () => "Quelle erreur avez-vous commise (ou vu commettre), et qu'en avez-vous retenu ?",
+  },
+  {
+    type: 'discussion',
+    title: (c) => `${c.name} : faut-il agir maintenant ou attendre ?`,
+    content: () => 'Le contexte actuel pousse certains à agir vite, d\'autres à temporiser. Votre lecture ?',
+  },
+  {
+    type: 'question',
+    title: (c) => `Votre outil ou ressource préférée pour ${c.name} ?`,
+    content: () => "Simulateur, livre, newsletter... qu'est-ce qui vous a le plus aidé sur ce sujet ?",
+  },
+  {
+    type: 'discussion',
+    title: (c) => `${c.name} : ce que je referais différemment`,
+    content: () => 'Avec l\'expérience, qu\'est-ce que vous changeriez dans votre approche ?',
+  },
+];
+
+const FILLER_REPLIES = [
+  'Bonne question, je me la pose aussi.',
+  'Ça dépend vraiment de la situation de chacun, difficile de généraliser.',
+  "Pour moi, le plus important a été de prendre mon temps avant de me décider.",
+  'Je confirme, j\'ai vécu la même chose de mon côté.',
+  "Pas tout à fait d'accord, je pense qu'il faut nuancer selon les profils.",
+];
+
+function buildFillerDiscussions() {
+  const entries = [];
+  CATEGORIES.forEach((category, categoryIndex) => {
+    FILLER_TEMPLATES.forEach((template, templateIndex) => {
+      const offset = categoryIndex + templateIndex;
+      const author = USERS[offset % USERS.length].username;
+      const replyCount = offset % 3;
+      const replies = Array.from({ length: replyCount }, (_, i) => ({
+        author: USERS[(offset + i + 1) % USERS.length].username,
+        content: FILLER_REPLIES[(offset + i) % FILLER_REPLIES.length],
+      })).filter((reply) => reply.author !== author);
+
+      entries.push({
+        category: category.slug,
+        type: template.type,
+        author,
+        title: template.title(category),
+        content: template.content(category),
+        replies,
+      });
+    });
+  });
+  return entries;
+}
+
+const DISCUSSIONS = [...EDITORIAL_DISCUSSIONS, ...buildFillerDiscussions()];
 
 async function findOrCreateUser(app, roleId, user) {
   const existing = await app.db.query('plugin::users-permissions.user').findOne({ where: { username: user.username } });

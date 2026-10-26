@@ -26,7 +26,9 @@ export const discussionListItemSchema = z.object({
   category: categoryRefSchema.nullable().optional(),
 });
 
-export const discussionDetailSchema = discussionListItemSchema;
+export const discussionDetailSchema = discussionListItemSchema.extend({
+  usefulCount: z.number(),
+});
 
 export const replySchema = z.object({
   id: z.number(),
@@ -34,6 +36,21 @@ export const replySchema = z.object({
   content: z.string(),
   createdAt: z.string(),
   authorUsername: z.string().nullable().optional(),
+  usefulCount: z.number(),
+  isBestAnswer: z.boolean(),
+});
+
+export const profileSchema = z.object({
+  username: z.string(),
+  discussionsCount: z.number(),
+  usefulReceived: z.number(),
+});
+
+export const voteSchema = z.object({
+  id: z.number(),
+  documentId: z.string(),
+  discussion: z.object({ documentId: z.string() }).nullable().optional(),
+  reply: z.object({ documentId: z.string() }).nullable().optional(),
 });
 
 export const paginationMetaSchema = z.object({
@@ -61,4 +78,6 @@ export type Category = z.infer<typeof categorySchema>;
 export type DiscussionListItem = z.infer<typeof discussionListItemSchema>;
 export type DiscussionDetail = z.infer<typeof discussionDetailSchema>;
 export type Reply = z.infer<typeof replySchema>;
+export type Vote = z.infer<typeof voteSchema>;
+export type Profile = z.infer<typeof profileSchema>;
 export type PaginationMeta = z.infer<typeof paginationMetaSchema>;

@@ -10,6 +10,7 @@ let categoryEpargneDocumentId: string;
 let userAId: number;
 let userBId: number;
 let jwtA: string;
+let jwtB: string;
 
 const BOURSE_FIXTURE_COUNT = 5;
 const EPARGNE_FIXTURE_COUNT = 2;
@@ -58,6 +59,7 @@ beforeAll(async () => {
 
   const userB = await createUser('test_user_b', 'test.user.b@example.com', authenticatedRole.id);
   userBId = userB.id;
+  jwtB = await strapi.plugin('users-permissions').service('jwt').issue({ id: userB.id });
 
   const bourse = await strapi.documents('api::category.category').create({
     data: { name: 'Bourse (test)', slug: 'bourse-test', description: 'fixture' },
@@ -227,5 +229,175 @@ describe('GET /api/discussions query features', () => {
       });
       expect(populated?.category?.slug).toBe('bourse-test');
     }
+  });
+});
+
+describe('POST /api/votes', () => {
+  it('marks another member\'s discussion as useful and bumps usefulCount', async () => {
+    const discussion = await strapi.documents('api::discussion.discussion').create({
+      data: {
+        title: 'Vote target discussion title',
+        content: 'x',
+        type: 'discussion',
+        author: userAId,
+        category: categoryBourseDocumentId,
+      },
+    });
+
+    const res = await http
+      .post('/api/votes')
+      .set('Authorization', `Bearer ${jwtB}`)
+      .send({ data: { discussion: discussion.documentId } });
+
+    expect(res.status).toBe(201);
+
+    const updated = await strapi.documents('api::discussion.discussion').findOne({ documentId: discussion.documentId });
+    expect(updated?.usefulCount).toBe(1);
+  });
+
+  it('rejects a duplicate vote from the same user on the same target', async () => {
+    const discussion = await strapi.documents('api::discussion.discussion').create({
+      data: {
+        title: 'Duplicate vote discussion title',
+        content: 'x',
+        type: 'discussion',
+        author: userAId,
+        category: categoryBourseDocumentId,
+      },
+    });
+
+    const first = await http
+      .post('/api/votes')
+      .set('Authorization', `Bearer ${jwtB}`)
+      .send({ data: { discussion: discussion.documentId } });
+    expect(first.status).toBe(201);
+
+    const second = await http
+      .post('/api/votes')
+      .set('Authorization', `Bearer ${jwtB}`)
+      .send({ data: { discussion: discussion.documentId } });
+    expect(second.status).toBe(400);
+  });
+
+  it('rejects marking one\'s own discussion as useful', async () => {
+    const discussion = await strapi.documents('api::discussion.discussion').create({
+      data: {
+        title: 'Own discussion vote attempt title',
+        content: 'x',
+        type: 'discussion',
+        author: userAId,
+        category: categoryBourseDocumentId,
+      },
+    });
+
+    const res = await http
+      .post('/api/votes')
+      .set('Authorization', `Bearer ${jwtA}`)
+      .send({ data: { discussion: discussion.documentId } });
+
+    expect(res.status).toBe(403);
+  });
+});
+
+describe('POST /api/replies/:documentId/best-answer', () => {
+  it('rejects the call from someone other than the discussion author', async () => {
+    const discussion = await strapi.documents('api::discussion.discussion').create({
+      data: {
+        title: 'Best answer permission discussion',
+        content: 'x',
+        type: 'question',
+        author: userAId,
+        category: categoryBourseDocumentId,
+      },
+    });
+    const reply = await strapi.documents('api::reply.reply').create({
+      data: { content: 'A reply', author: userBId, discussion: discussion.documentId },
+    });
+
+    const res = await http.post(`/api/replies/${reply.documentId}/best-answer`).set('Authorization', `Bearer ${jwtB}`);
+
+    expect(res.status).toBe(403);
+  });
+
+  it('lets the discussion author toggle a reply as best answer, unsetting any previous one', async () => {
+    const discussion = await strapi.documents('api::discussion.discussion').create({
+      data: {
+        title: 'Best answer toggle discussion',
+        content: 'x',
+        type: 'question',
+        author: userAId,
+        category: categoryBourseDocumentId,
+      },
+    });
+    const replyOne = await strapi.documents('api::reply.reply').create({
+      data: { content: 'First reply', author: userBId, discussion: discussion.documentId },
+    });
+    const replyTwo = await strapi.documents('api::reply.reply').create({
+      data: { content: 'Second reply', author: userBId, discussion: discussion.documentId },
+    });
+
+    const markFirst = await http
+      .post(`/api/replies/${replyOne.documentId}/best-answer`)
+      .set('Authorization', `Bearer ${jwtA}`);
+    expect(markFirst.status).toBe(200);
+    expect(markFirst.body.data.isBestAnswer).toBe(true);
+
+    const markSecond = await http
+      .post(`/api/replies/${replyTwo.documentId}/best-answer`)
+      .set('Authorization', `Bearer ${jwtA}`);
+    expect(markSecond.status).toBe(200);
+    expect(markSecond.body.data.isBestAnswer).toBe(true);
+
+    const refreshedFirst = await strapi.documents('api::reply.reply').findOne({ documentId: replyOne.documentId });
+    expect(refreshedFirst?.isBestAnswer).toBe(false);
+  });
+});
+
+describe('GET /api/profiles/:username', () => {
+  it('returns 404 for a username with no account', async () => {
+    const res = await http.get('/api/profiles/no_such_user');
+    expect(res.status).toBe(404);
+  });
+
+  it('aggregates usefulCount across the user\'s discussions and replies', async () => {
+    // Delta, not an absolute count — the "author injection" block above
+    // already created a discussion authored (via the real HTTP endpoint)
+    // as test_user_a in this same shared instance.
+    const before = await http.get('/api/profiles/test_user_a');
+
+    const discussion = await strapi.documents('api::discussion.discussion').create({
+      data: {
+        title: 'Profile stats discussion title',
+        content: 'x',
+        type: 'discussion',
+        author: userAId,
+        authorUsername: 'test_user_a',
+        category: categoryBourseDocumentId,
+      },
+    });
+    const reply = await strapi.documents('api::reply.reply').create({
+      data: {
+        content: 'Profile stats reply',
+        author: userAId,
+        authorUsername: 'test_user_a',
+        discussion: discussion.documentId,
+      },
+    });
+
+    await http
+      .post('/api/votes')
+      .set('Authorization', `Bearer ${jwtB}`)
+      .send({ data: { discussion: discussion.documentId } });
+    await http
+      .post('/api/votes')
+      .set('Authorization', `Bearer ${jwtB}`)
+      .send({ data: { reply: reply.documentId } });
+
+    const after = await http.get('/api/profiles/test_user_a');
+
+    expect(after.status).toBe(200);
+    expect(after.body.data.username).toBe('test_user_a');
+    expect(after.body.data.discussionsCount).toBe(before.body.data.discussionsCount + 1);
+    expect(after.body.data.usefulReceived).toBe(before.body.data.usefulReceived + 2);
   });
 });

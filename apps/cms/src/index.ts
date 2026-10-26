@@ -10,6 +10,7 @@ const PERMISSIONS: Record<RoleType, string[]> = {
     'api::discussion.discussion.findOne',
     'api::reply.reply.find',
     'api::reply.reply.findOne',
+    'api::profile.profile.show',
   ],
   authenticated: [
     'api::category.category.find',
@@ -20,6 +21,10 @@ const PERMISSIONS: Record<RoleType, string[]> = {
     'api::reply.reply.find',
     'api::reply.reply.findOne',
     'api::reply.reply.create',
+    'api::reply.reply.markBestAnswer',
+    'api::vote.vote.create',
+    'api::vote.vote.find',
+    'api::profile.profile.show',
     'plugin::users-permissions.user.find',
   ],
 };
@@ -60,6 +65,19 @@ async function ensureDiscussionsCreatedAtIndex(strapi: Core.Strapi) {
   }
 }
 
+// Schema sync adds a new column to existing rows as NULL, not the schema's
+// declared default — only fresh creates get `default: 0`/`false` for free.
+async function backfillUsefulCounts(strapi: Core.Strapi) {
+  const knex = strapi.db.connection;
+  if (await knex.schema.hasTable('discussions')) {
+    await knex('discussions').whereNull('useful_count').update({ useful_count: 0 });
+  }
+  if (await knex.schema.hasTable('replies')) {
+    await knex('replies').whereNull('useful_count').update({ useful_count: 0 });
+    await knex('replies').whereNull('is_best_answer').update({ is_best_answer: false });
+  }
+}
+
 export default {
   register() {},
 
@@ -67,5 +85,6 @@ export default {
     await syncRolePermissions(strapi, 'public');
     await syncRolePermissions(strapi, 'authenticated');
     await ensureDiscussionsCreatedAtIndex(strapi);
+    await backfillUsefulCounts(strapi);
   },
 };
