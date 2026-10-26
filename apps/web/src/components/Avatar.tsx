@@ -4,6 +4,7 @@ const SIZE_CLASSES = {
   xs: 'h-[22px] w-[22px] text-[9.5px]',
   sm: 'h-[30px] w-[30px] text-[11.5px]',
   md: 'h-10 w-10 text-sm',
+  lg: 'h-16 w-16 text-xl',
 } as const;
 
 function hashUsername(username: string) {

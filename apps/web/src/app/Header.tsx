@@ -34,8 +34,10 @@ async function HeaderSessionActions() {
 
   return (
     <form action={logoutAction} className="flex flex-none items-center gap-2 rounded-full border border-hairline bg-surface py-[3px] pl-[3px] pr-2 shadow-card">
-      <Avatar username={username} size="xs" />
-      <span className="text-sm font-semibold text-ink-2">{username}</span>
+      <Link href={`/profile/${username}`} className="flex items-center gap-2 hover:opacity-80">
+        <Avatar username={username} size="xs" />
+        <span className="text-sm font-semibold text-ink-2">{username}</span>
+      </Link>
       <button type="submit" className="text-sm font-medium text-ink-3 hover:text-ink">
         Déconnexion
       </button>
