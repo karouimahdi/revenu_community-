@@ -20,14 +20,8 @@ async function RepliesSection({ documentId, discussion }: { documentId: string; 
   );
 }
 
-// Deliberately NOT Suspense-wrapped at this level, unlike HomePage —
-// notFound()'s HTTP status can only land correctly if it fires before any
-// bytes stream out. Once a Suspense fallback's 200 shell has flushed, a
-// later notFound() swaps the body but can't retroactively change the
-// status code (confirmed empirically: body showed the not-found UI, curl
-// still saw 200). §3.10's error contract commits to a real 404 for an
-// unknown documentId, which matters more here than this one route's
-// otherwise-avoidable "uncached data during prerendering" dev warning.
+// Not Suspense-wrapped at this level, unlike HomePage — once a fallback's
+// 200 shell has flushed, a later notFound() can't change the status code.
 export default async function DiscussionDetailPage({ params }: PageProps<'/discussions/[documentId]'>) {
   const { documentId } = await params;
 
@@ -42,9 +36,7 @@ export default async function DiscussionDetailPage({ params }: PageProps<'/discu
 
   return (
     <main className="mx-auto w-full max-w-full flex-1 px-4 py-6">
-      {/* Narrower than the header/home shell on purpose — a 1260px-wide
-          paragraph is uncomfortable to read; the mockup's own .post-main
-          doesn't stretch to its .layout grid's full middle column either. */}
+      {/* Narrower than the header/home shell — a 1260px-wide paragraph is uncomfortable to read. */}
       <div className="mx-auto max-w-[760px]">
         <DiscussionPost discussion={discussion} />
         <Suspense

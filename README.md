@@ -6,7 +6,7 @@ Take-home technical test.
 
 Status: all four core flows from the brief are done — home feed,
 discussion detail with replies, create-discussion, and login/logout —
-across both Strapi and Next.js. Remaining: the Next.js test suite, then
+across both Strapi and Next.js, with both test suites green. Remaining:
 hardening.
 
 ## Setup
@@ -69,16 +69,18 @@ Other commands: `npm run lint`, `npm run typecheck`, `npm run build`,
 ## Test
 
 ```bash
-npm test --workspace=apps/cms
+npm test
 ```
 
-Jest + Supertest against a disposable SQLite database (wiped before every
-run), covering input validation, author-spoofing defense, and the home
-feed's pagination/sort/filter query params. Production stays Postgres-only
-— SQLite is a test-speed trade-off, not a second supported deployment
-target.
+Runs both workspaces. `apps/cms`: Jest + Supertest against a disposable
+SQLite database (wiped before every run), covering input validation,
+author-spoofing defense, and the home feed's pagination/sort/filter query
+params. Production stays Postgres-only — SQLite is a test-speed trade-off,
+not a second supported deployment target.
 
-Next.js side (Vitest + Testing Library) lands with its own test phase.
+`apps/web`: Vitest + Testing Library — `DiscussionFeed` (card list, empty
+state, pending skeleton), `DiscussionForm` (client-side validation, server
+field-error mapping), and `useCreateReply`'s optimistic update/rollback.
 
 ## Demo accounts
 
@@ -182,6 +184,10 @@ isn't in the brief, but it's a small, already-public Strapi endpoint
   needed to run `npm test`. Jest + `ts-jest` + Supertest: the natural fit
   for a TypeScript Strapi app and the stack Strapi's own community docs
   point to for API testing.
+- Next.js tests use Vitest + Testing Library, not Jest — Vite's native ESM
+  means no transform config to fight for a project that's already
+  App-Router/Server-Component-first, and it's the pairing Next's own docs
+  recommend over Jest for exactly this stack.
 
 ## What I would do next
 
@@ -189,12 +195,12 @@ All four core flows from the brief are built: Strapi (content types,
 relations, permissions, idempotent seed data, automated tests) and
 Next.js (data layer, home feed, discussion detail with optimistic
 replies, create-discussion with client+server validation, login/logout
-with route guards and a session-aware header). The throwaway debug page
-from Phase 5 (`apps/web/src/app/debug/`) has been deleted — everything it
-was proving has a real page covering it now.
+with route guards and a session-aware header), each with its own test
+suite green. The throwaway debug page from Phase 5
+(`apps/web/src/app/debug/`) has been deleted — everything it was proving
+has a real page covering it now.
 
-Next: the Next.js test suite (Vitest + Testing Library, per `PLAN.md`
-§5), then hardening (fresh-clone check, `.env.example` audit, final
+Next: hardening (fresh-clone check, `.env.example` audit, final
 lint/typecheck pass across both workspaces).
 
 After that, in priority order if time allows: pagination, search, "Utile"

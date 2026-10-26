@@ -6,11 +6,7 @@ interface CategoriesGridProps {
   onSelect: (categorySlug: string) => void;
 }
 
-// Mockup's viewSpaces/.spaces-grid. Dropped the per-category discussion/reply
-// counts shown there — that's fixture data in the mockup, and we have no
-// cheap way to compute it per category without a read per card (CLAUDE.md-
-// style cost discipline, same spirit even though that file is a different
-// project's rules).
+
 export function CategoriesGrid({ categories, onSelect }: CategoriesGridProps) {
   return (
     <div>

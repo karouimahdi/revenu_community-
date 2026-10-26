@@ -28,11 +28,8 @@ function getServerSnapshot(): Density {
   return 'comfy';
 }
 
-// useSyncExternalStore, not useState+useEffect: localStorage isn't readable
-// during SSR, and a mount-effect calling setState would both trip
-// react-hooks/set-state-in-effect and risk a hydration flash. This is the
-// API React ships specifically for syncing render state to tab-local,
-// synchronous external storage.
+// useSyncExternalStore, not useState+useEffect — localStorage isn't SSR-safe
+// and a mount-effect here would trip react-hooks/set-state-in-effect.
 export function useDensity() {
   const density = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
 

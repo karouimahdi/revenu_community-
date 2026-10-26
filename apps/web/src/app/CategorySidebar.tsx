@@ -16,15 +16,8 @@ interface CategorySidebarProps {
   onSelectCategory: (categorySlug: string) => void;
 }
 
-// `self-start`: without it, the grid item (a flex column) stretches to the
-// row's full height (the tallest sibling, i.e. the feed) — position:sticky
-// still computes correctly against that stretched box in theory, but
-// pairing stretch with an internal flex column is the single most common
-// reason a "sticky sidebar in a CSS grid" silently doesn't pin in practice.
-// Fluid width — DiscussionFeed places this inside a grid track (1/3/2
-// column layout), so it fills whatever width that track gets rather than
-// carrying its own fixed px. Desktop only (md+); mobile keeps the
-// horizontal chip scroller already built into DiscussionFeed.
+// `self-start` so sticky still pins — a stretched flex-column grid item is
+// the usual reason a sticky sidebar silently stops working. Desktop only (md+).
 export function CategorySidebar({
   categories,
   view,

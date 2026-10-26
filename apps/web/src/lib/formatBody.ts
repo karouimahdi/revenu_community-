@@ -1,8 +1,4 @@
-// Ported from the mockup's formatBody() — the "tiny whitelist" from
-// PLAN.md §1 assumption 2: **bold** and `- ` lists, nothing else (no
-// @mentions, no link auto-detection — both out of scope here). Escapes
-// first, then only ever introduces a fixed set of attribute-less tags, so
-// the only user-controlled data in the output is already-escaped text.
+
 function escapeHtml(text: string): string {
   return text.replace(/[&<>"']/g, (char) => {
     switch (char) {

@@ -5,10 +5,7 @@ import { useSession } from '@/hooks/useSession';
 import { Avatar } from '@/components/Avatar';
 import { HelpIcon, MessageIcon, UserIcon } from '@/components/icons';
 
-// Mockup's .greet + quickComposer — /discussions/new already guards
-// unauthenticated visits (redirect to /login?next=...), so these links go
-// straight there instead of a client-side requireLogin() gate (PLAN.md §1:
-// no composer modal, DiscussionForm is a full page).
+
 export function ComposerBar() {
   const { user, isAuthenticated } = useSession();
 

@@ -25,9 +25,8 @@ async function HomeFeed({ searchParams }: Pick<PageProps<'/'>, 'searchParams'>) 
   );
 }
 
-// Not async — awaiting searchParams here (a runtime API) instead of inside
-// the Suspense-wrapped child would block the whole route from prerendering
-// (confirmed in Phase 7 reading the dev server's own console).
+// Not async — awaiting searchParams here instead of in the Suspense-wrapped
+// child would block the whole route from prerendering.
 export default function HomePage({ searchParams }: PageProps<'/'>) {
   return (
     <main className="mx-auto w-full max-w-full flex-1 px-4 py-6">

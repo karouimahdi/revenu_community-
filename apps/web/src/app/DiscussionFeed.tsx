@@ -35,11 +35,8 @@ function densityButtonClass(active: boolean) {
   }`;
 }
 
-// Updates the URL for shareability without going through next/navigation's
-// router — that would trigger a soft RSC navigation, defeating the point
-// of filtering through TanStack Query + the Route Handler (PLAN.md §4.2).
-// `view` (feed vs. the "Tous les espaces" grid) is deliberately not synced
-// here — it's a client-only presentation toggle, not a server-fetched filter.
+// Plain history.replaceState, not next/navigation's router — avoids a soft
+// RSC navigation on every filter change. `view` is deliberately not synced here.
 function syncUrl(filters: ListDiscussionsFilters) {
   const params = new URLSearchParams();
   if (filters.categorySlug) params.set('category', filters.categorySlug);

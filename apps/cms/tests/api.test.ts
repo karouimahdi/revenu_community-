@@ -134,9 +134,7 @@ describe('POST /api/discussions validation', () => {
         data: { title: 'A valid enough title', content: 'x', type: 'discussion', category: categoryBourseDocumentId },
       });
 
-    // Public role is correctly resolved and lacks the create permission —
-    // 403, not 401. See PLAN.md §3.5 for why a 401-producing policy doesn't
-    // work in Strapi v5's request pipeline.
+    
     expect(res.status).toBe(403);
   });
 });

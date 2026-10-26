@@ -1,6 +1,5 @@
-// Icon + color per category slug, ported from the mockup's CATS/spIcon —
-// presentational only, so kept as a static client-side map rather than a
-// new Strapi field (PLAN.md §1: category filtering only needs name/slug).
+// Icon + color per slug, ported from the mockup's CATS — presentational
+// only, so a static map here rather than a new Strapi field.
 const VISUALS: Record<string, { color: string; path: React.ReactNode }> = {
   bourse: {
     color: '#007aff',

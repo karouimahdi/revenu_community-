@@ -3,9 +3,8 @@ import { CategoryTag } from '@/components/CategoryTag';
 import { formatRelativeDate } from '@/lib/relativeDate';
 import type { DiscussionListItem } from '@/lib/strapi/schemas';
 
-// Mockup's .feed-compact .trow — one discussion per line, columns instead
-// of the comfy card's stacked meta. Dropped the mockup's "views" column:
-// we don't track view counts, and a fake one would be worse than omitting it.
+// Mockup's .feed-compact .trow. Dropped the "views" column — we don't
+// track view counts, and a fake one would be worse than omitting it.
 export function DiscussionRow({ discussion }: { discussion: DiscussionListItem }) {
   const count = discussion.repliesCount;
 

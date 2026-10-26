@@ -10,10 +10,7 @@ apps/cms/.tmp
 apps/cms/types/generated
 package-lock.json
 
-# Hand-crafted prose — Prettier's markdown reflow would fight intentional
-# formatting; project-doc content, not generated/boilerplate code.
-PLAN.md
-CLAUDE.md
+
 
 # Read-only reference from the brief — never reformatted.
 maquette-communaute-le-revenu.html

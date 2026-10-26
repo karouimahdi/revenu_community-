@@ -11,13 +11,8 @@ async function CategoriesSection({ initialType }: { initialType: 'question' | 'd
   return <DiscussionForm categories={categories.data} initialType={initialType} />;
 }
 
-// The auth check (and its redirect()) deliberately stays outside Suspense
-// — same reason as the discussion detail page's notFound(): once a
-// Suspense fallback's 200 shell has streamed, a later redirect() can only
-// become a client-side script-tag redirect, not a real HTTP redirect
-// (confirmed empirically: curl saw a 200 with the login page's content
-// inlined, not a 307/308). A real redirect for a logged-out visit matters
-// more than this one check's avoidable dev warning.
+// redirect() stays outside Suspense — once the fallback's 200 shell has
+// streamed, a later redirect() only degrades to a client-side script tag.
 export default async function NewDiscussionPage({ searchParams }: PageProps<'/discussions/new'>) {
   const token = (await cookies()).get(SESSION_COOKIE_NAME)?.value;
 

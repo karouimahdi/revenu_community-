@@ -17,8 +17,7 @@ interface ReplyThreadProps {
 
 export function ReplyThread({ documentId, initialReplies, initialDiscussion }: ReplyThreadProps) {
   // Seeds the discussion(documentId) cache entry so useCreateReply's
-  // optimistic update has something to bump (PLAN.md §4.5) — this
-  // component never renders anything from it directly.
+  // optimistic update can read the discussion's type without a background
   useDiscussion(documentId, initialDiscussion);
 
   const { data, isPending, isError, error } = useReplies(documentId, initialReplies);

@@ -28,9 +28,7 @@ export function useDiscussions(filters: ListDiscussionsFilters = {}, initialData
     queryFn: () => apiFetch<DiscussionsResponse>(`/api/discussions?${buildQueryString(filters)}`),
     initialData,
     // Switching back to an already-fetched filter/sort combo should be
-    // instant with zero network request, not just instant-looking while a
-    // background refetch fires (PLAN.md §4.5's original 30s home-list
-    // number, carried forward as TanStack's client-side staleTime).
+    // instant with zero network request, so we don't want a background refetch on mount. The list page's own
     staleTime: 30_000,
   });
 }
