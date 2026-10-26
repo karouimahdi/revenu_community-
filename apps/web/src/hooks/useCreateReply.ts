@@ -1,6 +1,6 @@
 'use client';
 
-import { useMutation, useQueryClient, type QueryKey } from '@tanstack/react-query';
+import { useMutation, useQueryClient, type InfiniteData, type QueryKey } from '@tanstack/react-query';
 import { apiFetch } from '@/lib/apiFetch';
 import { queryKeys } from '@/lib/queryKeys';
 import { useSession } from './useSession';
@@ -15,18 +15,23 @@ interface CreateReplyResponse {
   meta: Record<string, never>;
 }
 
+type DiscussionsCache = InfiniteData<DiscussionsResponse>;
+
 interface MutationContext {
   previousReplies?: RepliesResponse;
   previousDiscussion?: DiscussionResponse;
-  previousLists: Array<[QueryKey, DiscussionsResponse | undefined]>;
+  previousLists: Array<[QueryKey, DiscussionsCache | undefined]>;
 }
 
-function bumpRepliesCount(list: DiscussionsResponse, documentId: string): DiscussionsResponse {
+function bumpRepliesCount(list: DiscussionsCache, documentId: string): DiscussionsCache {
   return {
     ...list,
-    data: list.data.map((item) =>
-      item.documentId === documentId ? { ...item, repliesCount: item.repliesCount + 1 } : item,
-    ),
+    pages: list.pages.map((page) => ({
+      ...page,
+      data: page.data.map((item) =>
+        item.documentId === documentId ? { ...item, repliesCount: item.repliesCount + 1 } : item,
+      ),
+    })),
   };
 }
 
@@ -48,7 +53,7 @@ export function useCreateReply(documentId: string) {
 
       const previousReplies = queryClient.getQueryData<RepliesResponse>(queryKeys.replies(documentId));
       const previousDiscussion = queryClient.getQueryData<DiscussionResponse>(queryKeys.discussion(documentId));
-      const previousLists = queryClient.getQueriesData<DiscussionsResponse>({ queryKey: ['discussions'] });
+      const previousLists = queryClient.getQueriesData<DiscussionsCache>({ queryKey: ['discussions'] });
 
       const pendingReply: Reply = {
         id: -Date.now(),
@@ -56,6 +61,8 @@ export function useCreateReply(documentId: string) {
         content,
         createdAt: new Date().toISOString(),
         authorUsername: user?.username ?? null,
+        usefulCount: 0,
+        isBestAnswer: false,
       };
 
       if (previousReplies) {

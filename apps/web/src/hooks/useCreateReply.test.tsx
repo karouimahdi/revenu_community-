@@ -23,7 +23,17 @@ function createReplyCacheClient() {
 }
 
 const SEED_REPLIES: RepliesResponse = {
-  data: [{ id: 1, documentId: 'reply-1', content: 'Première réponse.', createdAt: new Date().toISOString(), authorUsername: 'karim_immo' }],
+  data: [
+    {
+      id: 1,
+      documentId: 'reply-1',
+      content: 'Première réponse.',
+      createdAt: new Date().toISOString(),
+      authorUsername: 'karim_immo',
+      usefulCount: 0,
+      isBestAnswer: false,
+    },
+  ],
   meta: { pagination: { page: 1, pageSize: 20, pageCount: 1, total: 1 } },
 };
 

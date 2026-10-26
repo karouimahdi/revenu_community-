@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useDiscussions, type DiscussionsResponse } from '@/hooks/useDiscussions';
 import { useDensity } from '@/hooks/useDensity';
 import type { ListDiscussionsFilters } from '@/lib/strapi/discussions';
@@ -55,18 +55,42 @@ interface DiscussionFeedProps {
 
 export function DiscussionFeed({ categories, initialFilters, initialData }: DiscussionFeedProps) {
   const [filters, setFilters] = useState<ListDiscussionsFilters>(initialFilters);
+  const [syncedInitialFilters, setSyncedInitialFilters] = useState(initialFilters);
   const [view, setView] = useState<View>('feed');
   const [density, setDensity] = useDensity();
+
+  // HeaderSearch navigates, giving a fresh `initialFilters` reference —
+  // sync it in during render so the query actually picks up the new term.
+  if (initialFilters !== syncedInitialFilters) {
+    setSyncedInitialFilters(initialFilters);
+    setFilters(initialFilters);
+  }
+
   const isInitialFilters =
     filters.categorySlug === initialFilters.categorySlug &&
     filters.search === initialFilters.search &&
     filters.sort === initialFilters.sort &&
     filters.unanswered === initialFilters.unanswered;
 
-  const { data, isPending, isError, error } = useDiscussions(
+  const { data, isPending, isError, error, fetchNextPage, hasNextPage, isFetchingNextPage } = useDiscussions(
     filters,
     isInitialFilters && view === 'feed' ? initialData : undefined,
   );
+  const discussions = data?.pages.flatMap((page) => page.data) ?? [];
+
+  const sentinelRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const node = sentinelRef.current;
+    if (!node || !hasNextPage) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry?.isIntersecting && !isFetchingNextPage) fetchNextPage();
+      },
+      { rootMargin: '400px' },
+    );
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
   function selectCategory(categorySlug: string) {
     const next = { ...filters, categorySlug };
@@ -215,7 +239,7 @@ export function DiscussionFeed({ categories, initialFilters, initialData }: Disc
               <div className="rounded-[14px] border border-line bg-surface shadow-card">
                 <ErrorState message={error.message} />
               </div>
-            ) : data.data.length === 0 ? (
+            ) : discussions.length === 0 ? (
               <div className="rounded-[14px] border border-line bg-surface shadow-card">
                 <EmptyState
                   title={filters.search ? 'Aucun résultat' : filters.unanswered ? 'Aucune question sans réponse' : 'Aucune discussion'}
@@ -229,15 +253,29 @@ export function DiscussionFeed({ categories, initialFilters, initialData }: Disc
                 />
               </div>
             ) : (
-              <div className="rounded-[14px] border border-line bg-surface shadow-card overflow-hidden">
-                {data.data.map((discussion) =>
-                  density === 'compact' ? (
-                    <DiscussionRow key={discussion.documentId} discussion={discussion} />
-                  ) : (
-                    <DiscussionCard key={discussion.documentId} discussion={discussion} />
-                  ),
-                )}
-              </div>
+              <>
+                <div className="rounded-[14px] border border-line bg-surface shadow-card overflow-hidden">
+                  {discussions.map((discussion) =>
+                    density === 'compact' ? (
+                      <DiscussionRow key={discussion.documentId} discussion={discussion} />
+                    ) : (
+                      <DiscussionCard key={discussion.documentId} discussion={discussion} />
+                    ),
+                  )}
+                </div>
+
+                {hasNextPage ? (
+                  <div ref={sentinelRef} className="flex justify-center py-6">
+                    {isFetchingNextPage ? (
+                      <span
+                        role="status"
+                        aria-label="Chargement de discussions supplémentaires"
+                        className="h-6 w-6 animate-spin rounded-full border-2 border-line border-t-brand"
+                      />
+                    ) : null}
+                  </div>
+                ) : null}
+              </>
             )}
           </>
         )}
