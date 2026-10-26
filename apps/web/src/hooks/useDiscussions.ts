@@ -14,7 +14,9 @@ export interface DiscussionsResponse {
 function buildQueryString(filters: ListDiscussionsFilters) {
   const params = new URLSearchParams();
   if (filters.categorySlug) params.set('category', filters.categorySlug);
+  if (filters.search) params.set('search', filters.search);
   if (filters.sort) params.set('sort', filters.sort);
+  if (filters.unanswered) params.set('unanswered', '1');
   if (filters.page) params.set('page', String(filters.page));
   if (filters.pageSize) params.set('pageSize', String(filters.pageSize));
   return params.toString();

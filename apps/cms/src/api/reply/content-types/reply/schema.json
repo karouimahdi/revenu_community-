@@ -22,6 +22,9 @@
       "target": "plugin::users-permissions.user",
       "required": true
     },
+    "authorUsername": {
+      "type": "string"
+    },
     "discussion": {
       "type": "relation",
       "relation": "manyToOne",

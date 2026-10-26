@@ -5,7 +5,7 @@ import { formatRelativeDate } from '@/lib/relativeDate';
 import type { DiscussionDetail } from '@/lib/strapi/schemas';
 
 export function DiscussionPost({ discussion }: { discussion: DiscussionDetail }) {
-  const username = discussion.author?.username;
+  const username = discussion.authorUsername;
 
   return (
     <article className="rounded-[14px] border border-line bg-surface p-6 shadow-card">

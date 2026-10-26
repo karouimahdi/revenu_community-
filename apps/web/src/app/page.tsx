@@ -7,15 +7,21 @@ import { FeedSkeleton } from './FeedSkeleton';
 async function HomeFeed({ searchParams }: Pick<PageProps<'/'>, 'searchParams'>) {
   const params = await searchParams;
   const categorySlug = typeof params.category === 'string' ? params.category : undefined;
+  const search = typeof params.q === 'string' ? params.q : undefined;
   const sort: DiscussionSort = params.sort === 'createdAt:asc' ? 'createdAt:asc' : 'createdAt:desc';
+  const unanswered = params.unanswered === '1';
 
   const [categories, discussions] = await Promise.all([
     listCategories(),
-    listDiscussions({ categorySlug, sort }),
+    listDiscussions({ categorySlug, search, sort, unanswered }),
   ]);
 
   return (
-    <DiscussionFeed categories={categories.data} initialFilters={{ categorySlug, sort }} initialData={discussions} />
+    <DiscussionFeed
+      categories={categories.data}
+      initialFilters={{ categorySlug, search, sort, unanswered }}
+      initialData={discussions}
+    />
   );
 }
 
@@ -24,7 +30,7 @@ async function HomeFeed({ searchParams }: Pick<PageProps<'/'>, 'searchParams'>) 
 // (confirmed in Phase 7 reading the dev server's own console).
 export default function HomePage({ searchParams }: PageProps<'/'>) {
   return (
-    <main className="mx-auto w-full max-w-3xl flex-1 px-4 py-6">
+    <main className="mx-auto w-full max-w-full flex-1 px-4 py-6">
       <Suspense fallback={<FeedSkeleton />}>
         <HomeFeed searchParams={searchParams} />
       </Suspense>

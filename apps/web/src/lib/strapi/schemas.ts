@@ -1,10 +1,5 @@
 import { z } from 'zod';
 
-export const authorSchema = z.object({
-  id: z.number(),
-  username: z.string(),
-});
-
 export const categorySchema = z.object({
   id: z.number(),
   documentId: z.string(),
@@ -15,27 +10,30 @@ export const categorySchema = z.object({
 
 export const categoryRefSchema = categorySchema.pick({ id: true, documentId: true, name: true, slug: true });
 
+// authorUsername is denormalized, not a populated relation — Strapi's
+// output sanitizer drops a populated `author` for any role lacking `find`
+// on plugin::users-permissions.user, which the Public role deliberately
+// doesn't have (see apps/cms's discussion/reply controllers).
 export const discussionListItemSchema = z.object({
   id: z.number(),
   documentId: z.string(),
   title: z.string(),
   type: z.enum(['question', 'discussion']),
+  content: z.string(),
   repliesCount: z.number(),
   createdAt: z.string(),
-  author: authorSchema.nullable().optional(),
+  authorUsername: z.string().nullable().optional(),
   category: categoryRefSchema.nullable().optional(),
 });
 
-export const discussionDetailSchema = discussionListItemSchema.extend({
-  content: z.string(),
-});
+export const discussionDetailSchema = discussionListItemSchema;
 
 export const replySchema = z.object({
   id: z.number(),
   documentId: z.string(),
   content: z.string(),
   createdAt: z.string(),
-  author: authorSchema.nullable().optional(),
+  authorUsername: z.string().nullable().optional(),
 });
 
 export const paginationMetaSchema = z.object({
@@ -59,7 +57,6 @@ export function strapiSingleResponseSchema<T extends z.ZodTypeAny>(item: T) {
   });
 }
 
-export type Author = z.infer<typeof authorSchema>;
 export type Category = z.infer<typeof categorySchema>;
 export type DiscussionListItem = z.infer<typeof discussionListItemSchema>;
 export type DiscussionDetail = z.infer<typeof discussionDetailSchema>;

@@ -7,7 +7,6 @@ export async function listReplies(discussionDocumentId: string) {
       filters: { discussion: { documentId: { $eq: discussionDocumentId } } },
       sort: ['createdAt:asc'],
       pagination: { pageSize: 100 },
-      populate: { author: { fields: ['username'] } },
     },
   });
   return strapiListResponseSchema(replySchema).parse(json);

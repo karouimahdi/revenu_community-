@@ -28,6 +28,8 @@ export const metadata: Metadata = {
   description: 'Forum-style community space for Le Revenu readers.',
 };
 
+export const instant = false;
+
 export default function RootLayout({ children }: LayoutProps<'/'>) {
   return (
     <html

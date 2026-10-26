@@ -4,7 +4,7 @@ import { formatRelativeDate } from '@/lib/relativeDate';
 import type { Reply } from '@/lib/strapi/schemas';
 
 export function ReplyCard({ reply }: { reply: Reply }) {
-  const username = reply.author?.username;
+  const username = reply.authorUsername;
 
   return (
     <article className="rounded-[14px] border border-line bg-surface p-4 shadow-card">

@@ -4,9 +4,10 @@ Forum-style community space for Le Revenu readers: discussions, replies,
 categories. Next.js (App Router) frontend, Strapi v5 + PostgreSQL backend.
 Take-home technical test.
 
-Status: the Strapi side is done (content types, permissions, seed data,
-tests). On the Next.js side, the data layer, home feed, and discussion
-detail (with replies) are done; create-discussion and login land next.
+Status: all four core flows from the brief are done — home feed,
+discussion detail with replies, create-discussion, and login/logout —
+across both Strapi and Next.js. Remaining: the Next.js test suite, then
+hardening.
 
 ## Setup
 
@@ -98,6 +99,11 @@ password below:
 | sophie_invest | Demo1234! |
 | karim_immo | Demo1234! |
 
+Log in with any of these at `/login` (identifier is the username), or
+create a new account from the same popup — self-service registration
+isn't in the brief, but it's a small, already-public Strapi endpoint
+(`/api/auth/local/register`), added on request.
+
 ## Architecture decisions
 
 - Next.js never talks to Postgres directly. Every read and write goes
@@ -147,6 +153,21 @@ password below:
   `dangerouslySetInnerHTML` — safe here because the renderer escapes the
   input first and only ever reintroduces a fixed, attribute-less set of
   tags around already-escaped text, never raw user HTML.
+- Same rule, one call further: `/discussions/new`'s auth guard
+  (`redirect()` to `/login` when logged out) also stays outside Suspense
+  — a `redirect()` fired after a Suspense fallback's `200` shell has
+  streamed only becomes a client-side script-tag redirect, not a real
+  HTTP redirect. Confirmed with `curl`, which otherwise saw a `200` with
+  the login page's markup inlined into the guarded route's response.
+- `getMe` is wrapped in React's `cache()` (request-scoped, not Next's data
+  cache) — both `Header` and `SessionBoundary` independently derive the
+  session from the same cookie every render; without it they'd each hit
+  Strapi once per request for identical data.
+- `/login` is a real route styled as a popup, not a true overlay-over-
+  any-page modal — the server-side route guards (`redirect('/login?
+  next=...')`) need an actual URL to send people to, and a real client-
+  side modal would mean reworking those guards into something client-side
+  instead.
 - Zod validates every Strapi response at the `lib/strapi` boundary — a
   backend contract break becomes a loud parse error there instead of an
   `undefined.map is not a function` several components deep. `qs` builds
@@ -164,16 +185,17 @@ password below:
 
 ## What I would do next
 
-The Strapi side is done: content types, relations, permissions
-(unauthenticated users can't publish, nobody can publish as someone else),
-idempotent seed data, and an automated test suite. On Next.js: the data
-layer, the home feed (category filter, date sort, loading/error/empty
-states), and discussion detail (post content, replies, optimistic reply
-posting with rollback, toasts) are all done. The throwaway debug page
-(`apps/web/src/app/debug/`) is still there, pending deletion once
-create-discussion and login exist to replace what it's proving. Remaining
-core work: create-discussion form with server-side validation, login with
-the seeded demo users.
+All four core flows from the brief are built: Strapi (content types,
+relations, permissions, idempotent seed data, automated tests) and
+Next.js (data layer, home feed, discussion detail with optimistic
+replies, create-discussion with client+server validation, login/logout
+with route guards and a session-aware header). The throwaway debug page
+from Phase 5 (`apps/web/src/app/debug/`) has been deleted — everything it
+was proving has a real page covering it now.
+
+Next: the Next.js test suite (Vitest + Testing Library, per `PLAN.md`
+§5), then hardening (fresh-clone check, `.env.example` audit, final
+lint/typecheck pass across both workspaces).
 
 After that, in priority order if time allows: pagination, search, "Utile"
 votes and best-answer marking, a user profile page, Playwright E2E

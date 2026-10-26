@@ -437,6 +437,7 @@ export interface ApiDiscussionDiscussion extends Struct.CollectionTypeSchema {
   attributes: {
     author: Schema.Attribute.Relation<'manyToOne', 'plugin::users-permissions.user'> &
       Schema.Attribute.Required;
+    authorUsername: Schema.Attribute.String;
     category: Schema.Attribute.Relation<'manyToOne', 'api::category.category'> &
       Schema.Attribute.Required;
     content: Schema.Attribute.Text & Schema.Attribute.Required;
@@ -483,6 +484,7 @@ export interface ApiReplyReply extends Struct.CollectionTypeSchema {
   attributes: {
     author: Schema.Attribute.Relation<'manyToOne', 'plugin::users-permissions.user'> &
       Schema.Attribute.Required;
+    authorUsername: Schema.Attribute.String;
     content: Schema.Attribute.Text & Schema.Attribute.Required;
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> & Schema.Attribute.Private;

@@ -1,3 +1,4 @@
+import { cache } from 'react';
 import { z } from 'zod';
 import { strapiFetch } from './client';
 
@@ -21,7 +22,20 @@ export async function login(identifier: string, password: string) {
   return loginResponseSchema.parse(json);
 }
 
-export async function getMe(token: string) {
+// Public on Strapi by default (users-permissions' Public role) — confirmed
+// against the live instance while seeding/testing earlier phases.
+export async function register(username: string, email: string, password: string) {
+  const json = await strapiFetch('/api/auth/local/register', {
+    method: 'POST',
+    body: { username, email, password },
+  });
+  return loginResponseSchema.parse(json);
+}
+
+// Cached per-request (React's cache(), not Next's data cache) — both
+// SessionBoundary and Header independently derive the session from the
+// same cookie this render; without this they'd each hit Strapi once.
+export const getMe = cache(async (token: string) => {
   const json = await strapiFetch('/api/users/me', { token });
   return sessionUserSchema.parse(json);
-}
+});

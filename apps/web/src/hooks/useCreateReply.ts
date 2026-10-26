@@ -55,7 +55,7 @@ export function useCreateReply(documentId: string) {
         documentId: `pending-${Date.now()}`,
         content,
         createdAt: new Date().toISOString(),
-        author: user ? { id: user.id, username: user.username } : null,
+        authorUsername: user?.username ?? null,
       };
 
       if (previousReplies) {

@@ -34,6 +34,9 @@
       "target": "plugin::users-permissions.user",
       "required": true
     },
+    "authorUsername": {
+      "type": "string"
+    },
     "category": {
       "type": "relation",
       "relation": "manyToOne",

@@ -2,11 +2,12 @@ import Link from 'next/link';
 import { Avatar } from '@/components/Avatar';
 import { CategoryTag } from '@/components/CategoryTag';
 import { formatRelativeDate } from '@/lib/relativeDate';
+import { plainExcerpt } from '@/lib/formatBody';
 import type { DiscussionListItem } from '@/lib/strapi/schemas';
 
 export function DiscussionCard({ discussion }: { discussion: DiscussionListItem }) {
   const count = discussion.repliesCount;
-  const username = discussion.author?.username;
+  const username = discussion.authorUsername;
 
   return (
     <Link
@@ -33,6 +34,8 @@ export function DiscussionCard({ discussion }: { discussion: DiscussionListItem 
         </div>
 
         <h3 className="font-display text-[18.5px] font-bold leading-snug text-ink">{discussion.title}</h3>
+
+        <p className="mt-1 line-clamp-2 text-[14px] text-ink-2">{plainExcerpt(discussion.content)}</p>
 
         <div className="mt-2 flex items-center gap-2 text-[13px] text-ink-3">
           <Avatar username={username ?? '?'} size="xs" />

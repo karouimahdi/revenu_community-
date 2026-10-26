@@ -338,6 +338,7 @@ async function findOrCreateDiscussion(app, discussion, userIdByUsername, categor
       content: discussion.content,
       type: discussion.type,
       author: userIdByUsername[discussion.author],
+      authorUsername: discussion.author,
       category: categoryDocumentIdBySlug[discussion.category],
     },
   });
@@ -355,6 +356,7 @@ async function findOrCreateReply(app, discussionDocumentId, reply, userIdByUsern
     data: {
       content: reply.content,
       author: userIdByUsername[reply.author],
+      authorUsername: reply.author,
       discussion: discussionDocumentId,
     },
   });

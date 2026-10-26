@@ -24,6 +24,17 @@ function inline(text: string): string {
   return text.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
 }
 
+// Plain-text version for list excerpts (mockup's .texcerpt): strip the
+// whitelist's own markers instead of rendering them, then collapse to a
+// single line for line-clamp to handle.
+export function plainExcerpt(text: string): string {
+  return text
+    .replace(/\*\*(.+?)\*\*/g, '$1')
+    .replace(/^- /gm, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
 export function formatBody(text: string): string {
   return escapeHtml(text)
     .split(/\n{2,}/)

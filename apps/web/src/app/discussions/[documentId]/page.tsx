@@ -41,17 +41,22 @@ export default async function DiscussionDetailPage({ params }: PageProps<'/discu
   }
 
   return (
-    <main className="mx-auto w-full max-w-3xl flex-1 px-4 py-6">
-      <DiscussionPost discussion={discussion} />
-      <Suspense
-        fallback={
-          <div className="mt-6">
-            <RepliesSkeleton />
-          </div>
-        }
-      >
-        <RepliesSection documentId={documentId} discussion={discussion} />
-      </Suspense>
+    <main className="mx-auto w-full max-w-full flex-1 px-4 py-6">
+      {/* Narrower than the header/home shell on purpose — a 1260px-wide
+          paragraph is uncomfortable to read; the mockup's own .post-main
+          doesn't stretch to its .layout grid's full middle column either. */}
+      <div className="mx-auto max-w-[760px]">
+        <DiscussionPost discussion={discussion} />
+        <Suspense
+          fallback={
+            <div className="mt-6">
+              <RepliesSkeleton />
+            </div>
+          }
+        >
+          <RepliesSection documentId={documentId} discussion={discussion} />
+        </Suspense>
+      </div>
     </main>
   );
 }
