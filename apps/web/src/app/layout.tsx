@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
-import { Geist, Geist_Mono, Playfair_Display } from 'next/font/google';
+import { Geist, Geist_Mono } from 'next/font/google';
+import localFont from 'next/font/local';
 import { Suspense } from 'react';
 import { Providers } from './Providers';
 import { SessionBoundary } from './SessionBoundary';
@@ -17,10 +18,18 @@ const geistMono = Geist_Mono({
   subsets: ['latin'],
 });
 
-const playfairDisplay = Playfair_Display({
+// Self-hosted, not next/font/google — fetching Playfair Display from
+// Google's CDN at build time was flaky (Turbopack's font loader surfaces a
+// failed/odd fetch as a confusing "Module not found" rather than a network
+// error). Files are the same latin-subset woff2 Google itself serves,
+// downloaded once from fonts.gstatic.com.
+const playfairDisplay = localFont({
   variable: '--font-playfair-display',
-  weight: ['700', '900'],
-  subsets: ['latin'],
+  src: [
+    { path: '../fonts/playfair-display-700.woff2', weight: '700', style: 'normal' },
+    { path: '../fonts/playfair-display-900.woff2', weight: '900', style: 'normal' },
+  ],
+  display: 'swap',
 });
 
 export const metadata: Metadata = {
