@@ -66,6 +66,23 @@ npm run dev:cms   # apps/cms only
 Other commands: `npm run lint`, `npm run typecheck`, `npm run build`,
 `npm run format` — all run across both workspaces.
 
+## Docker (one-command alternative)
+
+```bash
+npm run docker:up
+```
+
+Builds and runs Postgres, Strapi, and Next.js together via
+`docker-compose.yml` — no local Node/Postgres install needed. Next.js on
+<http://localhost:3000>, Strapi admin on <http://localhost:1337/admin>,
+Postgres exposed on `5434` (kept off the default `5432`/`5433` so it
+can't collide with a native Postgres or the dev container above). First
+boot seeds nothing — run `npm run docker:seed` once the stack is healthy.
+`npm run docker:down` stops it. The secrets baked into `docker-compose.yml`
+are intentionally fake placeholders for this throwaway local stack, same
+spirit as `.env.example`'s `changeme` values — never meant to back a real
+deployment; override any of them via a root-level `.env` if you need to.
+
 ## Test
 
 ```bash
@@ -82,6 +99,18 @@ not a second supported deployment target.
 state, pending skeleton), `DiscussionForm` (client-side validation, server
 field-error mapping), and `useCreateReply`'s optimistic update/rollback.
 
+### E2E (Playwright, bonus)
+
+```bash
+npx playwright install chromium   # once
+npm run test:e2e
+```
+
+One happy-path spec (`e2e/happy-path.spec.ts`): log in as a seeded demo
+user, create a discussion, land on its detail page, post a reply, confirm
+it appears without a page reload. Boots Strapi and Next.js itself if
+they're not already running (reuses them if they are).
+
 ## Demo accounts
 
 ```bash
@@ -89,9 +118,10 @@ npm run seed
 ```
 
 Idempotent — safe to run again on the same database, won't duplicate
-categories, users, discussions, or replies. Seeds 7 categories and 14
-sample discussions (with replies) across 5 demo users, all sharing the
-password below:
+categories, users, discussions, or replies. Seeds 7 categories and 56
+sample discussions (14 hand-written with replies, 42 generated — enough
+volume to actually exercise the home feed's infinite scroll) across 5
+demo users, all sharing the password below:
 
 | username | password |
 |---|---|
@@ -188,6 +218,24 @@ isn't in the brief, but it's a small, already-public Strapi endpoint
   means no transform config to fight for a project that's already
   App-Router/Server-Component-first, and it's the pairing Next's own docs
   recommend over Jest for exactly this stack.
+- "Utile" votes have no un-vote: a `Vote` row is created once (`user` +
+  exactly one of `discussion`/`reply`, plus a `voteKey` Strapi already
+  enforces as unique), no `update`/`delete` permission is granted to any
+  role. `usefulCount` on Discussion/Reply is denormalized the same way as
+  `repliesCount` — a lifecycle hook recomputes it from a `count()`, not a
+  blind increment, so a missed event can't drift it permanently.
+- Best answer is a dedicated controller action
+  (`POST /api/replies/:documentId/best-answer`), not a core `update` —
+  `update`/`delete` stay disabled on Reply everywhere else. The action
+  checks the caller is the *discussion's* author (not the reply's) and
+  unsets any other reply's flag on the same discussion first, so at most
+  one best answer ever exists per discussion.
+- Both Dockerfiles build from the repo root, not `apps/web`/`apps/cms` —
+  npm workspaces need the root `package.json`/lockfile present to resolve
+  either app's deps. `apps/web` builds with Next's `output: 'standalone'`;
+  `apps/cms` runs `strapi build` once at image-build time and serves the
+  compiled `dist/` via `strapi start`, never `strapi develop` inside a
+  container that's supposed to just run.
 
 ## What I would do next
 
@@ -197,15 +245,19 @@ Next.js (data layer, home feed, discussion detail with optimistic
 replies, create-discussion with client+server validation, login/logout
 with route guards and a session-aware header), each with its own test
 suite green. The throwaway debug page from Phase 5
-(`apps/web/src/app/debug/`) has been deleted — everything it was proving
-has a real page covering it now.
+(`apps/web/src/app/debug/`) has been deleted — everything it was
+proving has a real page covering it now.
 
-Next: hardening (fresh-clone check, `.env.example` audit, final
-lint/typecheck pass across both workspaces).
-
-After that, in priority order if time allows: pagination, search, "Utile"
-votes and best-answer marking, a user profile page, Playwright E2E
-coverage, Docker Compose for a one-command local run.
+All bonuses from PLAN.md §6 are done: pagination, search, "Utile"
+votes, best-answer marking, a user profile page, Playwright E2E
+coverage (one happy-path spec — see the Test section above), and Docker
+Compose. `npm run docker:up` boots a verified-working stack — both
+images build clean and a full `docker compose up` + seed + home-feed
+render was confirmed end to end. The two Alpine-native-binding gotchas
+that blocked it (`@next/swc` and Tailwind v4's `@tailwindcss/oxide`
+both needed their musl variant installed by exact package name — see
+PLAN.md §6 B6) are now just comments in `apps/web/Dockerfile`, not open
+questions.
 
 ## License
 

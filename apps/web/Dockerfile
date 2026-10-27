@@ -4,8 +4,6 @@
 # lockfile), not apps/web — see docker-compose.yml's build.context.
 
 FROM node:22-alpine AS base
-# Next's native SWC binary is glibc-built; Alpine's musl libc can't load it
-# without this compat shim — Next's own Docker example applies the same fix.
 RUN apk add --no-cache libc6-compat
 WORKDIR /repo
 
@@ -13,7 +11,12 @@ FROM base AS deps
 COPY package.json package-lock.json ./
 COPY apps/web/package.json apps/web/package.json
 COPY apps/cms/package.json apps/cms/package.json
-RUN npm ci --workspace=apps/web
+# --libc/--os/--cpu did nothing here (silently ignored) — both @next/swc
+# and @tailwindcss/oxide need their musl binary installed by name instead.
+RUN npm ci --workspace=apps/web && \
+    npm install --workspace=apps/web --no-save \
+      @next/swc-linux-x64-musl \
+      @tailwindcss/oxide-linux-x64-musl
 
 FROM deps AS build
 COPY apps/web apps/web
