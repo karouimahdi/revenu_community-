@@ -248,16 +248,13 @@ suite green. The throwaway debug page from Phase 5
 (`apps/web/src/app/debug/`) has been deleted — everything it was
 proving has a real page covering it now.
 
-All bonuses from PLAN.md §6 are done: pagination, search, "Utile"
+other bonuses are done: pagination, search, "Utile"
 votes, best-answer marking, a user profile page, Playwright E2E
 coverage (one happy-path spec — see the Test section above), and Docker
 Compose. `npm run docker:up` boots a verified-working stack — both
 images build clean and a full `docker compose up` + seed + home-feed
 render was confirmed end to end. The two Alpine-native-binding gotchas
-that blocked it (`@next/swc` and Tailwind v4's `@tailwindcss/oxide`
-both needed their musl variant installed by exact package name — see
-PLAN.md §6 B6) are now just comments in `apps/web/Dockerfile`, not open
-questions.
+that blocked it 
 
 ## License
 
